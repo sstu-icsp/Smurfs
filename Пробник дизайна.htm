@@ -1,0 +1,179 @@
+<html>
+	<head>
+	<meta charset="utf-8">
+		<title>canvas</title>
+	</head>
+	<body>
+		<canvas id = "my_canvas" width="1000" height="1000"></canvas>
+		<script language="JavaScript">
+			var context = document.querySelector("canvas").getContext("2d");
+            //пузыри
+			/*var k=20, h=200  ; // количество пузырей, высота окна
+			var puz = [];
+			for (var i=0; i<k; i++)
+			{
+				puz[i] = [];
+				for (var j=0; j<5; j++)
+					{
+						if (j==0) puz[i][j]=Math.random()*2+2; //n
+						if (j==1) puz[i][j]=Math.random()*60+20; //x
+						if (j==2) puz[i][j]=h+20; // y
+						if (j==3) puz[i][j]=Math.random()*5+2; //r
+						if (j==4) puz[i][j]=1; //q
+					}
+			}
+			var y=-20, a=1, x=Math.random()*60+20;
+			function padenie()
+			{
+			context.clearRect(0, 0, 100, h);
+			for (var i=0; i<k; i++)
+			{	
+			context.beginPath();
+			context.arc(+puz[i][1], +puz[i][2], +puz[i][3], 0, 2*Math.PI);
+			context.fillStyle = 'rgba(100,100,100,'+puz[i][4]+')';
+			context.fill();
+			if (puz[i][2]<-20) 
+			{
+				puz[i][2]=h+20;
+				puz[i][1]=Math.random()*60+20;
+				puz[i][0]=Math.random()*2;
+				puz[i][3]=Math.random()*5+2;
+				puz[i][4]=1;
+			}
+			puz[i][2]-=puz[i][0];
+			puz[i][4]-=1/(h*puz[i][3]);
+			}
+			setTimeout("padenie()", 20);
+			}
+			if (a) padenie();*/
+            //данные
+            var x = 10, y = 10; //количество ячеек в двух измерениях
+            var h = 50, s = 10; //размер ячейки и интервал между ними
+            var cell = []; //массив данных о сетке ячеек
+            var cX = null, cY = null; //координаты клика
+            var startX = null, startY = null; //запоминание начала клика
+            var click = false;
+            var mouse = { //тут следим за мышью
+                x : 0,
+                y : 0
+            };
+            var AllColor = "#646464"; //всеобщий цвет
+            // #FF0000 запасной цвет
+            for (var i = 0; i < x; i++)// заполнение массива данными
+                {
+                    cell[i] = [];
+                    for (var j = 0; j < y; j++)
+                        {
+                            cell[i][j] = [];
+                            for (var z = 0; z < 3; z++)
+                                {
+                                    if (z==0) cell[i][j][z] = h * i + (s-1) * i+1; //данные по оси Х
+                                    if (z==1) cell[i][j][z] = h * j + (s-1) * j+1; //данные по оси У
+                                    if (z==2) cell[i][j][z] = AllColor; //цвет
+                                }
+                        }
+                }
+            //стиль и цвет, пока не нужно
+            context.fillStyle = AllColor;
+            context.strokeStyle = AllColor;
+            //
+            function filletRect(Color, X, Y, H) //рисует квадрат со скругленными краями
+            {
+                var q = 0.5; //коэффициент скругленности
+                context.fillStyle = Color; //задание цвета
+                context.strokeStyle = Color;
+                ////////////////////
+                context.beginPath();
+                context.moveTo((H-q*H)/2+X, Y);
+                context.lineTo(H-(H-q*H)/2+X, Y);
+                //context.arcTo(H-(H-q*H)/2+X, Y, H+X, (H-q*H)/2+Y, (H-q*H)/2);
+                context.arc(H-(H-q*H)/2+X, (H-q*H)/2+Y, (H-q*H)/2, Math.PI/2, 0, false);
+                context.lineTo(X+H, H-(H-q*H)/2+Y);
+                //context.arcTo(X+H, H-(H-q*H)/2+Y, H-(H-q*H)/2+X, Y+H, (H-q*H)/2);
+                context.arc(H-(H-q*H)/2+X, H-(H-q*H)/2+Y, (H-q*H)/2, Math.PI, Math.PI/2, false);
+                context.lineTo((H-q*H)/2+X, H+Y);
+                //context.arcTo((H-q*H)/2+X, H+Y, X, H-(H-q*H)/2+Y,(H-q*H)/2);
+                context.arc((H-q*H)/2+X, H-(H-q*H)/2+Y, (H-q*H)/2, 3*Math.PI/2, Math.PI, false);
+                context.lineTo(X, q*H/2+Y);
+                //context.arcTo(X, q*H/2+Y, (H-q*H)/2+X, Y, (H-q*H)/2);
+                context.arc((H-q*H)/2+X, (H-q*H)/2+Y, (H-q*H)/2, 0, -Math.PI/2, false);
+                context.stroke();
+                //context.closePath();
+                context.fill(); // */
+            }
+            document.onclick = function(e) //получаем координату точки клика по canvas относительно него самого
+                {
+                    //document.getElementById('proba').innerHTML = e.pageX + ':' + e.pageY;
+                    c = document.getElementById('my_canvas').getBoundingClientRect();
+                    //document.getElementById('proba2').innerHTML = (document.body.scrollLeft + c.left) + ":" + (document.body.scrollTop + c.top) + ' ' +e.pageX + ':' + e.pageY + ' ';
+                    cX = e.pageX - (document.body.scrollLeft + c.left);
+                    if (cX < 0 || cX > document.getElementById('my_canvas').scrollWidth) cX = null;
+                    cY = e.pageY - (document.body.scrollTop + c.top);
+                    if (cY < 0 || cY > document.getElementById('my_canvas').scrollHeight) cY = null;
+                    IfIntersects(cX, cY);
+                    //document.getElementById('proba2').innerHTML = cX + ':' + cY; //временная консоль
+                }
+            
+            window.onmousemove = function(e) // отслеживаем коордитаны мыши
+            {
+                    c = document.getElementById('my_canvas').getBoundingClientRect();
+                    mouse.x = e.pageX - (document.body.scrollLeft + c.left);
+                    if (mouse.x < 0 || mouse.x > document.getElementById('my_canvas').scrollWidth) mouse.x = null;
+                    mouse.y = e.pageY - (document.body.scrollTop + c.top);
+                    if (mouse.y < 0 || mouse.y > document.getElementById('my_canvas').scrollHeight) mouse.y = null;
+                document.getElementById('proba2').innerHTML = mouse.x + ':' + mouse.y; //временная консоль
+            }
+            
+            window.onmousedown = function(e) //отслеживаем зажатие клавиши мыши
+            {
+                startX = mouse.x;
+                startY = mouse.y;
+                click = true;
+            }
+            
+            window.onmouseup = function(e) //отслеживаем отпускание клавиши
+            {
+                startX = null;
+                startY = null;
+                click = false;
+            }
+            
+            function IfIntersects(X, Y) //проверяет вхождение указанной точки в одну из ячеек и ее модификация
+            {
+                if(X==null || Y==null) return;
+                if(X>cell[x-1][0][0]+h || Y>cell[0][y-1][1]+h) return;
+                else
+                    {
+                        var pozX, pozY;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY = j;
+                            }
+                        cell[pozX][pozY][2] = "#FF0000";
+                    }
+            }
+            function paint()
+            {
+                context.clearRect(0, 0, 1000, 1000);
+                //здесь будет отрисовка рабочего поля и его анимация
+                for (var i = 0; i < x; i++)
+                    {
+                        for (var j = 0; j < y; j++)
+                            {
+                                //context.fillRect(cell[i][j][0], cell[i][j][1], h, h);
+                                filletRect(cell[i][j][2], cell[i][j][0], cell[i][j][1], h);
+                            }
+                    }
+              
+                setTimeout("paint()", 20);
+            }
+            if (true) paint();
+		</script>
+        <div id = "proba"></div>
+        <div id = "proba2"></div>
+	</body>
+</html>
