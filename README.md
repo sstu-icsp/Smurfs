@@ -3,7 +3,7 @@
 
 ## Основные документы
 
-Техническое задание [Google Docs](https://docs.google.com/document/d/1WF71McaLDMixglyjc7YpO3_6vzK8ZgMVS3wj4jV1aLI/edit/).
+Техническое задание [Google Docs](https://docs.google.com/document/d/1WF71McaLDMixglyjc7YpO3_6vzK8ZgMVS3wj4jV1aLI/edit).
 
 ### Релиз #1 - Сентябрь
 ----------------
