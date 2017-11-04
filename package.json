@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "starts":"gulp"
+    "starts": "gulp"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +19,17 @@
     "ejs": "^2.5.7",
     "gulp": "^3.9.1",
     "gulp-nodemon": "^2.2.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sstu-icsp/Smurfs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sstu-icsp/Smurfs/issues"
+  },
+  "engines": {
+    "node": "6.11.5",
+    "npm": "3.10.10"
+  },
+  "homepage": "https://github.com/sstu-icsp/Smurfs#readme"
 }
