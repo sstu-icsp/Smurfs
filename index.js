@@ -1,7 +1,7 @@
 // server.js
 var express = require("express");
 var app = express();
-var bodyParser     = require('body-parser');
+var bodyParser = require('body-parser');
 var port = process.env.PORT || 5000;
 
 app.use(express.static('public'));
