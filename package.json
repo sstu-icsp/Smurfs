@@ -28,8 +28,8 @@
     "url": "https://github.com/sstu-icsp/Smurfs/issues"
   },
   "engines": {
-    "node": "6.11.5",
-    "npm": "3.10.10"
+    "node": "6.11.x",
+    "npm": "5.1.x"
   },
   "homepage": "https://github.com/sstu-icsp/Smurfs#readme"
 }
