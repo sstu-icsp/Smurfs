@@ -110,7 +110,7 @@
                     if (cX < 0 || cX > document.getElementById('my_canvas').scrollWidth) cX = null;
                     cY = e.pageY - (document.body.scrollTop + c.top);
                     if (cY < 0 || cY > document.getElementById('my_canvas').scrollHeight) cY = null;
-                    IfIntersects(cX, cY);
+                    IfIntersects(cX, cY, 1);
                     //document.getElementById('proba2').innerHTML = cX + ':' + cY; //временная консоль
                 }
             
@@ -131,14 +131,14 @@
                 click = true;
             }
             
-            window.onmouseup = function(e) //отслеживаем отпускание клавиши
+            /*window.onmouseup = function(e) //отслеживаем отпускание клавиши
             {
                 startX = null;
                 startY = null;
                 click = false;
-            }
+            }*/
             
-            function IfIntersects(X, Y) //проверяет вхождение указанной точки в одну из ячеек и ее модификация
+            function IfIntersects(X, Y, state) //проверяет вхождение указанной точки в одну из ячеек и ее модификация
             {
                 if(X==null || Y==null) return;
                 if(X>cell[x-1][0][0]+h || Y>cell[0][y-1][1]+h) return;
@@ -153,7 +153,47 @@
                             {
                                 if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY = j;
                             }
-                        cell[pozX][pozY][2] = "#FF0000";
+                        if (state == 0) {cell[pozX][pozY][2] = "#FF0000";}
+                        if (state == 1)
+                            {
+                                if (click)
+                                    {
+                                        MassPrint = CalculateShip(X, Y);
+                                        for(var i = 0; i < MassPrint.length; i++)
+                                            {
+                                                cell[MassPrint[i][0]][MassPrint[i][1]][2] = "#FF0000";
+                                            }
+                                    }
+                            }
+                    }
+            }
+            function CalculateShip(X, Y) //возвращает массив с координатами закрашиваемых ячеек
+            {
+                var Dx = X - startX;
+                var Dy = Y - startY;
+                var mass = [];
+                if(Dy < 0 && Math.abs(Dy) > Math.abs(Dx)) // I
+                    {
+                        var pozX, pozY, pozY2;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY2 = j;
+                            }
+                        for(var i=0;i <= Math.abs(pozY - pozY2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX;
+                                mass[i][1] = pozY+i;
+                            }
+                        return mass;
                     }
             }
             function paint()
