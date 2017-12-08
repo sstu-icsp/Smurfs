@@ -57,6 +57,7 @@
                 x : 0,
                 y : 0
             };
+            var Ships = []; //хранит координаты кораблей
             var AllColor = "#646464"; //всеобщий цвет
             // #FF0000 запасной цвет
             for (var i = 0; i < x; i++)// заполнение массива данными
@@ -121,7 +122,7 @@
                     if (mouse.x < 0 || mouse.x > document.getElementById('my_canvas').scrollWidth) mouse.x = null;
                     mouse.y = e.pageY - (document.body.scrollTop + c.top);
                     if (mouse.y < 0 || mouse.y > document.getElementById('my_canvas').scrollHeight) mouse.y = null;
-                document.getElementById('proba2').innerHTML = mouse.x + ':' + mouse.y; //временная консоль
+                    //document.getElementById('proba2').innerHTML = mouse.x + ':' + mouse.y; //временная консоль
             }
             
             window.onmousedown = function(e) //отслеживаем зажатие клавиши мыши
@@ -153,18 +154,69 @@
                             {
                                 if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY = j;
                             }
-                        if (state == 0) {cell[pozX][pozY][2] = "#FF0000";}
-                        if (state == 1)
+                        if (state == 0) // при клике перекрашиваем одну клетку
+                        {
+                            cell[pozX][pozY][2] = "#FF0000";
+                        } 
+                        if (state == 1) // кри зажатой клавише перекрашиваем линию клеток
                             {
                                 if (click)
                                     {
                                         MassPrint = CalculateShip(X, Y);
+                                        AddShip(MassPrint);
                                         for(var i = 0; i < MassPrint.length; i++)
                                             {
                                                 cell[MassPrint[i][0]][MassPrint[i][1]][2] = "#FF0000";
                                             }
                                     }
                             }
+                    }
+            }
+            function AddShip(MassPrint) // реализует добавление корабля 
+            {
+                if (true) //тут будет проверяться корректность установки корабля (пересечение с добавленными, ограниченность кораблей)
+                    {
+                        NewShip = []; //новый корабль
+                        NewShip.push(MassPrint[0], MassPrint[MassPrint.length-1]); //добавляем координаты начала и конца в объект @корабль@
+                        Ships.push(NewShip); //добавляем корабль в массив кораблей
+                        return true;
+                    }
+                else return false;
+            }
+            function FindShip(Ship) //определяет количество клеток, занимаемых объектом Ship
+            {
+                mass = [];
+                if (Ship[0][0] == Ship[1][0])
+                    {
+                        if (Ship[0][1]<=Ship[1][1])
+                            {
+                               for(var i=Ship[0][1]; i <= Ship[1][1]; i++)
+                                   {
+                                       mass[i] = [];
+                                       mass[i][0] = Ship[0][0];
+                                       mass[i][1] = i;
+                                   }
+                                return mass;
+                            }
+                        else
+                        {
+                            for(var i=Ship[1][1]; i <= Ship[0][1]; i++)
+                                   {
+                                       mass[i] = [];
+                                       mass[i][0] = Ship[0][0];
+                                       mass[i][1] = i;
+                                   }
+                            return mass;
+                        }
+                    }
+                if (Ship[0][1] == Ship[1][1])
+                    {
+                        if (Ship[0][0]<=Ship[1][0])
+                            for(var i = Ship[0][0]; i <= Ship[1][0]; i++)
+                                {
+                                    mass[i] = [];
+                                    //mass[][] !!!!потом допишу по аналогии с предыдущим, !!!!не забыть бы про реализацию через push
+                                }
                     }
             }
             function CalculateShip(X, Y) //возвращает массив с координатами закрашиваемых ячеек
@@ -191,7 +243,76 @@
                             {
                                 mass[i] = [];
                                 mass[i][0] = pozX;
+                                mass[i][1] = pozY-i;
+                            }
+                        return mass;
+                    }
+                if(Dx >= 0 && Math.abs(Dy) <= Math.abs(Dx)) //II
+                    {
+                        var pozY, pozX, pozX2;
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                         for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX2 = i;
+                            }
+                        for(var i=0;i <= Math.abs(pozX - pozX2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX+i;
+                                mass[i][1] = pozY;
+                            }
+                        return mass;
+                    }
+                if(Dy > 0 && Math.abs(Dy) > Math.abs(Dx)) //III
+                    {
+                        var pozX, pozY, pozY2;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY2 = j;
+                            }
+                        for(var i=0;i <= Math.abs(pozY - pozY2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX;
                                 mass[i][1] = pozY+i;
+                            }
+                        return mass;
+                    }
+                if(Dx <= 0 && Math.abs(Dy) <= Math.abs(Dx))// IV
+                    {
+                        var pozY, pozX, pozX2;
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                         for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX2 = i;
+                            }
+                        for(var i=0;i <= Math.abs(pozX - pozX2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX-i;
+                                mass[i][1] = pozY;
                             }
                         return mass;
                     }
