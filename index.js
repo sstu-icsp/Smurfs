@@ -2,14 +2,38 @@
 var express = require("express");
 var app = express();
 var bodyParser = require('body-parser');
-var port = process.env.PORT || 5000;
+const config = require('./config');
+var mongoose = require("./libs/mongoose");
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+
+app.set('port',config.get('port'));
 
 app.use(express.static('public'));
 app.use(express.static('files'));
 app.use(bodyParser.urlencoded({ extended: true }));
-require('./routes/all_routes')(app);
+app.use(session({
+  secret: config.get("session:secret"),
+  key:config.get("session:key"),
+  resave: false,
+  saveUninitialized: false,
+  cookie:config.get("session:cookie"),
+  store: new MongoStore({mongooseConnection: mongoose.connection})
+}));
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
-app.listen(port, () => {
-  console.log('We are live on ' + port);
+app.set('view engine', 'ejs');
+var routes = require('./routes/all_routes')(app);
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+app.listen(app.get('port'), () => {
+  console.log('We are live on ' + app.get('port'));
 });

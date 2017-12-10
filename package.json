@@ -5,14 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "starts": "gulp"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "connect-mongo": "^2.0.0",
     "ejs": "^2.5.7",
+    "ejs-locals": "^1.0.2",
     "express": "^4.16.2",
-    "redis": "^2.8.0"
+    "express-session": "^1.15.6",
+    "nconf": "^0.9.1"
   },
   "devDependencies": {
     "browser-sync": "^2.18.13",
@@ -28,7 +31,7 @@
     "url": "https://github.com/sstu-icsp/Smurfs/issues"
   },
   "engines": {
-    "node": "6.11.x",
+    "node": "8.4.x",
     "npm": "5.1.x"
   },
   "homepage": "https://github.com/sstu-icsp/Smurfs#readme"
