@@ -7,7 +7,7 @@ var mongoose = require("./libs/mongoose");
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 
-app.set('port',config.get('port'));
+app.set('port',process.env.PORT|config.get('port'));
 
 app.use(express.static('public'));
 app.use(express.static('files'));
