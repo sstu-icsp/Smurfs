@@ -18,12 +18,6 @@
     "nconf": "^0.9.1",
     "mongoose": "latest"
   },
-  "devDependencies": {
-    "browser-sync": "^2.18.13",
-    "ejs": "^2.5.7",
-    "gulp": "^3.9.1",
-    "gulp-nodemon": "^2.2.1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sstu-icsp/Smurfs.git"
