@@ -1,0 +1,18 @@
+{
+  "port":"3000",
+  "mongoose":{
+    "url":"mongodb://localhost/Ships",
+    "options":{
+      "useMongoClient": true
+    }
+  },
+  "session":{
+    "secret":"ASaccascqw123SA",
+    "key":"sid",
+    "cookie":{
+      "path":"/",
+      "httpOnly":true,
+      "maxAge":null
+    }
+  }
+}
