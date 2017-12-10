@@ -237,7 +237,7 @@
                         mass = FindShip(Ships[i]);
                         for(var j=0; j < mass.length; j++)
                             {
-                                if (mass[i][0] == X && mass[i][1] == Y) return true;
+                                if (mass[j][0] == X && mass[j][1] == Y) return true;
                             }
                     }
                 return false;
@@ -399,7 +399,10 @@
                         for (var j = 0; j < y; j++)
                             {
                                 //context.fillRect(cell[i][j][0], cell[i][j][1], h, h);
-                                filletRect(cell[i][j][2], cell[i][j][0], cell[i][j][1], h);
+                                if (cell[i][j][3])
+                                    {
+                                        filletRect(cell[i][j][2], cell[i][j][0], cell[i][j][1], h);
+                                    }
                             }
                     }
               
