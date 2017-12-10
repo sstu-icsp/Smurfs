@@ -8,11 +8,13 @@ router.get('/auth', function(req, res, next) {
 router.post('/auth', (req, res,next) => {
   if(req.session.user){res.redirect('/');}
   else{User.findOne({username:req.body.login},function(err,result){
+    if(result){
       if(result.checkPassword(req.body.password)){
         req.session.user = {id:result._id,name:result.username};
         res.redirect('/');
       }
       else res.send("Логин или пароль неверны");
+    }else res.send("Пользователь не существует");
   });
 }});
 router.get('/logout',(req,res,next)=>{
