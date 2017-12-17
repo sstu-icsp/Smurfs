@@ -1,14 +1,42 @@
+<!doctype html>
 <html>
-	<head>
-	<meta charset="utf-8">
-		<title></title>
-	</head>
-	<body>
-    <form action="registration" method="post">
-      <input type="text" name="login" value="">
-      <input type="text" name="password" value="">
-      <input type="text" name="password2" value="">
-      <input type="submit" name="submit" value="registration">
-    </form>
-  </body>
+<head>
+<meta charset="utf-8">
+<title>Регистрация</title>
+<link href="../public/registration.css" rel="stylesheet">
+</head>
+<body>
+<div id="container">
+<div id="wb_Signup1">
+<form name="signupform" method="post" accept-charset="UTF-8" action="registration">
+<table id="Signup1">
+<tr>
+   <td class="header">Регистрация</td>
+</tr>
+<tr>
+   <td class="label"><label>Логин</label></td>
+</tr>
+<tr>
+   <td class="row"><input class="input" name="login" type="text"></td>
+</tr>
+<tr>
+   <td class="label"><label>Пароль</label></td>
+</tr>
+<tr>
+   <td class="row"><input class="input" name="password" type="password" value=""></td>
+</tr>
+<tr>
+   <td class="label"><label>Подтверждение пароля</label></td>
+</tr>
+<tr>
+   <td class="row"><input class="input" name="password2" type="password" value=""></td>
+</tr>
+<tr>
+   <td style="text-align:center;vertical-align:bottom"><input class="button" type="submit" name="signup" value="Регистрация" id="signup"></td>
+</tr>
+</table>
+</form>
+</div>
+</div>
+</body>
 </html>
