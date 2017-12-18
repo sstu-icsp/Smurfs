@@ -51,7 +51,9 @@
 //количество ячеек в двух измерениях
             var x = 10, y = 10; 
 //размер ячейки и интервал между ними
-            var h = 50, s = 10; 
+            var h = 50, s = 10;
+//отступ отрисовки игрового поля
+            var shiftX = 1, shiftY = 1;
 //массив данных о сетке ячеек
             var cell = [];
 //координаты клика
@@ -83,8 +85,8 @@
                             cell[i][j] = [];
                             for (var z = 0; z < 4; z++)
                                 {
-                                    if (z==0) cell[i][j][z] = h * i + (s-1) * i+1; //данные по оси Х
-                                    if (z==1) cell[i][j][z] = h * j + (s-1) * j+1; //данные по оси У
+                                    if (z==0) cell[i][j][z] = h * i + (s-1) * i+shiftX; //данные по оси Х
+                                    if (z==1) cell[i][j][z] = h * j + (s-1) * j+shiftY; //данные по оси У
                                     if (z==2) cell[i][j][z] = AllColor; //цвет
                                     if (z==3) cell[i][j][z] = true; //рендерить да/нет
                                 }
@@ -135,8 +137,39 @@
                 //context.arcTo(X, q*H/2+Y, (H-q*H)/2+X, Y, (H-q*H)/2);
                 context.arc((H-q*H)/2+X, (H-q*H)/2+Y, (H-q*H)/2, 0, -Math.PI/2, false);
                 context.stroke();
-                //context.closePath();
-                context.fill(); // */
+                context.closePath();
+                context.fill();
+            }
+            function switchPrint(game) //рисует над серединой игрового поля индикатор переключения игры
+            {
+                
+                mX = 1; //масштаб отрисовки по Y
+                mY = 1; //масштаб отрисовки по Y
+                colorGamer = "#1DD300"; //цвет хода игрока
+                colorEnemy = "#FF0000"; //цвет хода противника
+                heightButton; //определяет выступ кнопки от максимального значения, в дальнейшем будет передаваться как параметр для анимации переключения 
+                if (game)
+                    {
+                        context.fillStyle = colorGamer;
+                        context.strokeStyle = ColorGamer;
+                    }
+                else
+                    {
+                        context.fillStyle = colorEnemy;
+                        context.strokeStyle = colorEnemy;
+                    }
+                StartX = Math.round((cell[0][x-1][0] + h - cell[0][0][0])/2); //координата начала отрисовки по X
+                StartY = cell[0][0][1] - (h + s); //координата начала отрисовки по Y
+                ///////////////////////
+                context.beginPath();
+                context.moveTo(StartX, StartY);
+                context.lineTo();
+                
+                
+                context.stroke();
+                context.closePath();
+                context.fill();
+                
             }
             document.onclick = function(e) //получаем координату точки клика по canvas относительно него самого
                 {
