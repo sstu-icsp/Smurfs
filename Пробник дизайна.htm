@@ -1,0 +1,434 @@
+<html>
+	<head>
+	<meta charset="utf-8">
+		<title>canvas</title>
+	</head>
+	<body>
+		<canvas id = "my_canvas" width="1000" height="1000"></canvas>
+        <button onclick="Start()">Start</button>
+		<script language="JavaScript">
+			var context = document.querySelector("canvas").getContext("2d");
+            //пузыри
+			/*var k=20, h=200  ; // количество пузырей, высота окна
+			var puz = [];
+			for (var i=0; i<k; i++)
+			{
+				puz[i] = [];
+				for (var j=0; j<5; j++)
+					{
+						if (j==0) puz[i][j]=Math.random()*2+2; //n
+						if (j==1) puz[i][j]=Math.random()*60+20; //x
+						if (j==2) puz[i][j]=h+20; // y
+						if (j==3) puz[i][j]=Math.random()*5+2; //r
+						if (j==4) puz[i][j]=1; //q
+					}
+			}
+			var y=-20, a=1, x=Math.random()*60+20;
+			function padenie()
+			{
+			context.clearRect(0, 0, 100, h);
+			for (var i=0; i<k; i++)
+			{	
+			context.beginPath();
+			context.arc(+puz[i][1], +puz[i][2], +puz[i][3], 0, 2*Math.PI);
+			context.fillStyle = 'rgba(100,100,100,'+puz[i][4]+')';
+			context.fill();
+			if (puz[i][2]<-20) 
+			{
+				puz[i][2]=h+20;
+				puz[i][1]=Math.random()*60+20;
+				puz[i][0]=Math.random()*2;
+				puz[i][3]=Math.random()*5+2;
+				puz[i][4]=1;
+			}
+			puz[i][2]-=puz[i][0];
+			puz[i][4]-=1/(h*puz[i][3]);
+			}
+			setTimeout("padenie()", 20);
+			}
+			if (a) padenie();*/
+            //данные
+//количество ячеек в двух измерениях
+            var x = 10, y = 10; 
+//размер ячейки и интервал между ними
+            var h = 50, s = 10; 
+//массив данных о сетке ячеек
+            var cell = [];
+//координаты клика
+            var cX = null, cY = null; 
+//запоминание начала клика
+            var startX = null, startY = null; 
+            var click = false;
+//тут следим за мышью
+            var mouse = { 
+                x : 0,
+                y : 0
+            };
+//хранит координаты кораблей
+            var Ships = []; 
+//максимальное количество кораблей
+            var MaxShips = 5; 
+//максимальный размер корабля
+            var MaxShip = 4; 
+//всеобщий цвет
+            var AllColor = "#646464"; 
+            // #FF0000 цвет подбития
+//состояние игры
+            var state = 1; 
+            for (var i = 0; i < x; i++)// заполнение массива данными
+                {
+                    cell[i] = [];
+                    for (var j = 0; j < y; j++)
+                        {
+                            cell[i][j] = [];
+                            for (var z = 0; z < 4; z++)
+                                {
+                                    if (z==0) cell[i][j][z] = h * i + (s-1) * i+1; //данные по оси Х
+                                    if (z==1) cell[i][j][z] = h * j + (s-1) * j+1; //данные по оси У
+                                    if (z==2) cell[i][j][z] = AllColor; //цвет
+                                    if (z==3) cell[i][j][z] = true; //рендерить да/нет
+                                }
+                        }
+                }
+            //стиль и цвет, пока не нужно
+            context.fillStyle = AllColor;
+            context.strokeStyle = AllColor;
+            //
+//инициирует начало игры
+            function Start()
+            {
+                fillPole(cell);
+                state = 0;
+            }
+            function fillPole(cell)//перекрашивает все поле
+            {
+                for (var i = 0; i < x; i++)
+                {
+                    for (var j = 0; j < y; j++)
+                        {
+                            for (var z = 2; z < 4; z++)
+                                {
+                                    if (z==2) cell[i][j][z] = AllColor; //цвет
+                                    if (z==3) cell[i][j][z] = true; //рендерить да/нет
+                                }
+                        }
+                }
+            }
+            function filletRect(Color, X, Y, H) //рисует квадрат со скругленными краями
+            {
+                var q = 0.5; //коэффициент скругленности
+                context.fillStyle = Color; //задание цвета
+                context.strokeStyle = Color;
+                ////////////////////
+                context.beginPath();
+                context.moveTo((H-q*H)/2+X, Y);
+                context.lineTo(H-(H-q*H)/2+X, Y);
+                //context.arcTo(H-(H-q*H)/2+X, Y, H+X, (H-q*H)/2+Y, (H-q*H)/2);
+                context.arc(H-(H-q*H)/2+X, (H-q*H)/2+Y, (H-q*H)/2, Math.PI/2, 0, false);
+                context.lineTo(X+H, H-(H-q*H)/2+Y);
+                //context.arcTo(X+H, H-(H-q*H)/2+Y, H-(H-q*H)/2+X, Y+H, (H-q*H)/2);
+                context.arc(H-(H-q*H)/2+X, H-(H-q*H)/2+Y, (H-q*H)/2, Math.PI, Math.PI/2, false);
+                context.lineTo((H-q*H)/2+X, H+Y);
+                //context.arcTo((H-q*H)/2+X, H+Y, X, H-(H-q*H)/2+Y,(H-q*H)/2);
+                context.arc((H-q*H)/2+X, H-(H-q*H)/2+Y, (H-q*H)/2, 3*Math.PI/2, Math.PI, false);
+                context.lineTo(X, q*H/2+Y);
+                //context.arcTo(X, q*H/2+Y, (H-q*H)/2+X, Y, (H-q*H)/2);
+                context.arc((H-q*H)/2+X, (H-q*H)/2+Y, (H-q*H)/2, 0, -Math.PI/2, false);
+                context.stroke();
+                //context.closePath();
+                context.fill(); // */
+            }
+            document.onclick = function(e) //получаем координату точки клика по canvas относительно него самого
+                {
+                    //document.getElementById('proba').innerHTML = e.pageX + ':' + e.pageY;
+                    c = document.getElementById('my_canvas').getBoundingClientRect();
+                    //document.getElementById('proba2').innerHTML = (document.body.scrollLeft + c.left) + ":" + (document.body.scrollTop + c.top) + ' ' +e.pageX + ':' + e.pageY + ' ';
+                    cX = e.pageX - (document.body.scrollLeft + c.left);
+                    if (cX < 0 || cX > document.getElementById('my_canvas').scrollWidth) cX = null;
+                    cY = e.pageY - (document.body.scrollTop + c.top);
+                    if (cY < 0 || cY > document.getElementById('my_canvas').scrollHeight) cY = null;
+                    IfIntersects(cX, cY, state);
+                    //document.getElementById('proba2').innerHTML = cX + ':' + cY; //временная консоль
+                }
+            
+            window.onmousemove = function(e) // отслеживаем коордитаны мыши
+            {
+                    c = document.getElementById('my_canvas').getBoundingClientRect();
+                    mouse.x = e.pageX - (document.body.scrollLeft + c.left);
+                    if (mouse.x < 0 || mouse.x > document.getElementById('my_canvas').scrollWidth) mouse.x = null;
+                    mouse.y = e.pageY - (document.body.scrollTop + c.top);
+                    if (mouse.y < 0 || mouse.y > document.getElementById('my_canvas').scrollHeight) mouse.y = null;
+                    //document.getElementById('proba2').innerHTML = mouse.x + ':' + mouse.y; //временная консоль
+            }
+            
+            window.onmousedown = function(e) //отслеживаем зажатие клавиши мыши
+            {
+                startX = mouse.x;
+                startY = mouse.y;
+                click = true;
+            }
+            
+            /*window.onmouseup = function(e) //отслеживаем отпускание клавиши
+            {
+                startX = null;
+                startY = null;
+                click = false;
+            }*/
+            
+            function IfIntersects(X, Y, state) //проверяет вхождение указанной точки в одну из ячеек и ее модификация
+            {
+                if(X==null || Y==null) return;
+                if(X>cell[x-1][0][0]+h || Y>cell[0][y-1][1]+h) return;
+                else
+                    {
+                        var pozX, pozY;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY = j;
+                            }
+                        if (state == 0) // при клике перекрашиваем одну клетку
+                        {
+                            if(cell[pozX][pozY][3] && IntersectsShip(pozX, pozY))
+                                {
+                                    cell[pozX][pozY][2] = "#FF0000";
+                                    //return;
+                                }
+                            if(cell[pozX][pozY][3] && !IntersectsShip(pozX, pozY))
+                                {
+                                    cell[pozX][pozY][3] = false;
+                                    //return;
+                                }
+                        } 
+                        if (state == 1) // кри зажатой клавише перекрашиваем линию клеток
+                            {
+                                if (click)
+                                    {
+                                        MassPrint = CalculateShip(X, Y);
+                                        if(AddShip(MassPrint))
+                                            {
+                                            for(var i = 0; i < MassPrint.length; i++)
+                                                {
+                                                    cell[MassPrint[i][0]][MassPrint[i][1]][2] = "#FF0000";
+                                                }
+                                            }
+                                    }
+                            }
+                    }
+            }
+            function AddShip(MassPrint) // реализует добавление корабля 
+            {
+                if (Ships.length < MaxShips && MassPrint.length <= MaxShip && IntersectsShips(MassPrint)) //тут будет проверяться корректность установки корабля (пересечение с добавленными, ограниченность кораблей, их размеров)
+                    {
+                        NewShip = []; //новый корабль
+                        NewShip.push(MassPrint[0], MassPrint[MassPrint.length-1]); //добавляем координаты начала и конца в объект @корабль@
+                        Ships.push(NewShip); //добавляем корабль в массив кораблей
+                        return true;
+                    }
+                else return false;
+            }
+            function IntersectsShips(ShipOne) //проверяет пересечение кораблей друг с другом, минимальное расстояние между ними
+            {
+                for(var s = 0; s < Ships.length; s++)//перебираем корабли для сличения
+                    {
+                        ship = FindShip(Ships[s]);
+                        for(var i=0; i < ship.length; i++)//перебираем ячейки кораблей
+                            {
+                                for(var j=0; j < ShipOne.length; j++)
+                                    {
+                                        if (Math.hypot(ship[i][0]-ShipOne[j][0], ship[i][1]-ShipOne[j][1]) < 2) //тут применен метод алгебраического нахождения расстояния между точками
+                                            {
+                                                return false;
+                                            }
+                                    }
+                            }
+                    }
+                return true;
+            }
+            function IntersectsShip(X, Y) //проверяет пересечение указанной точки с кораблем
+            {
+                for (var i = 0; i < Ships.length; i++)
+                    {
+                        mass = FindShip(Ships[i]);
+                        for(var j=0; j < mass.length; j++)
+                            {
+                                if (mass[j][0] == X && mass[j][1] == Y) return true;
+                            }
+                    }
+                return false;
+            }
+            function FindShip(Ship) //определяет массив клеток, занимаемых объектом Ship
+            {
+                mass = [];
+                if (Ship[0][0] == Ship[1][0])
+                    {
+                        if (Ship[0][1]<=Ship[1][1])
+                            {
+                               for(var i=0; i <= Math.abs(Ship[1][1] - Ship[0][1]); i++)
+                                   {
+                                       mass[i] = [];
+                                       mass[i][0] = Ship[0][0];
+                                       mass[i][1] = Ship[0][1] + i;
+                                   }
+                                return mass;
+                            }
+                        else
+                        {
+                            for(var i=0; i <= Math.abs(Ship[0][1] - Ship[1][1]); i++)
+                                   {
+                                       mass[i] = [];
+                                       mass[i][0] = Ship[0][0];
+                                       mass[i][1] = Ship[1][1] + i;
+                                   }
+                            return mass;
+                        }
+                    }
+                if (Ship[0][1] == Ship[1][1])
+                    {
+                        if (Ship[0][0]<=Ship[1][0])
+                            {
+                            for(var i=0; i <= Math.abs(Ship[1][0] - Ship[0][0]); i++)
+                                {
+                                    mass[i] = [];
+                                    mass[i][0] = Ship[0][0] + i; // !!!!не забыть бы про реализацию через push
+                                    mass[i][1] = Ship[0][1];
+                                }
+                            return mass;
+                            }
+                        else
+                                {
+                                    for(var i=0; i <= Math.abs(Ship[0][0] - Ship[1][0]); i++)
+                                    {
+                                        mass[i] = [];
+                                        mass[i][0] = Ship[1][0] + i;
+                                        mass[i][1] = Ship[0][1];
+                                    }
+                                    return mass;
+                                }
+                    }
+            }
+            function CalculateShip(X, Y) //возвращает массив с координатами закрашиваемых ячеек
+            {
+                var Dx = X - startX;
+                var Dy = Y - startY;
+                var mass = [];
+                if(Dy < 0 && Math.abs(Dy) > Math.abs(Dx)) // I
+                    {
+                        var pozX, pozY, pozY2;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY2 = j;
+                            }
+                        for(var i=0;i <= Math.abs(pozY - pozY2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX;
+                                mass[i][1] = pozY-i;
+                            }
+                        return mass;
+                    }
+                if(Dx >= 0 && Math.abs(Dy) <= Math.abs(Dx)) //II
+                    {
+                        var pozY, pozX, pozX2;
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                         for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX2 = i;
+                            }
+                        for(var i=0;i <= Math.abs(pozX - pozX2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX+i;
+                                mass[i][1] = pozY;
+                            }
+                        return mass;
+                    }
+                if(Dy > 0 && Math.abs(Dy) > Math.abs(Dx)) //III
+                    {
+                        var pozX, pozY, pozY2;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY2 = j;
+                            }
+                        for(var i=0;i <= Math.abs(pozY - pozY2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX;
+                                mass[i][1] = pozY+i;
+                            }
+                        return mass;
+                    }
+                if(Dx <= 0 && Math.abs(Dy) <= Math.abs(Dx))// IV
+                    {
+                        var pozY, pozX, pozX2;
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                         for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX2 = i;
+                            }
+                        for(var i=0;i <= Math.abs(pozX - pozX2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX-i;
+                                mass[i][1] = pozY;
+                            }
+                        return mass;
+                    }
+            }
+            function paint()
+            {
+                context.clearRect(0, 0, 1000, 1000);
+                //здесь будет отрисовка рабочего поля и его анимация
+                for (var i = 0; i < x; i++)
+                    {
+                        for (var j = 0; j < y; j++)
+                            {
+                                //context.fillRect(cell[i][j][0], cell[i][j][1], h, h);
+                                if (cell[i][j][3])
+                                    {
+                                        filletRect(cell[i][j][2], cell[i][j][0], cell[i][j][1], h);
+                                    }
+                            }
+                    }
+              
+                setTimeout("paint()", 20);
+            }
+            if (true) paint();
+		</script>
+        <div id = "proba"></div>
+        <div id = "proba2"></div>
+	</body>
+</html>
