@@ -221,7 +221,7 @@
             }
             function AddShip(MassPrint) // реализует добавление корабля 
             {
-                if (Ships.length < MaxShips && MassPrint.length <= MaxShip) //тут будет проверяться корректность установки корабля (пересечение с добавленными, ограниченность кораблей, их размеров)
+                if (Ships.length < MaxShips && MassPrint.length <= MaxShip && IntersectsShips(MassPrint)) //тут будет проверяться корректность установки корабля (пересечение с добавленными, ограниченность кораблей, их размеров)
                     {
                         NewShip = []; //новый корабль
                         NewShip.push(MassPrint[0], MassPrint[MassPrint.length-1]); //добавляем координаты начала и конца в объект @корабль@
@@ -229,6 +229,24 @@
                         return true;
                     }
                 else return false;
+            }
+            function IntersectsShips(ShipOne) //проверяет пересечение кораблей друг с другом, минимальное расстояние между ними
+            {
+                for(var s = 0; s < Ships.length; s++)//перебираем корабли для сличения
+                    {
+                        ship = FindShip(Ships[s]);
+                        for(var i=0; i < ship.length; i++)//перебираем ячейки кораблей
+                            {
+                                for(var j=0; j < ShipOne.length; j++)
+                                    {
+                                        if (Math.hypot(ship[i][0]-ShipOne[j][0], ship[i][1]-ShipOne[j][1]) < 2) //тут применен метод алгебраического нахождения расстояния между точками
+                                            {
+                                                return false;
+                                            }
+                                    }
+                            }
+                    }
+                return true;
             }
             function IntersectsShip(X, Y) //проверяет пересечение указанной точки с кораблем
             {
