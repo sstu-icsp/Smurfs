@@ -1,0 +1,55 @@
+div#container
+{
+   width: 1000px;
+    height: 1200px;
+   position: relative;
+   margin: 0 auto 0 auto;
+   text-align: left;
+}
+body
+{
+   background-color: #FFFFFF;
+   color: #000000;
+   font-family: Arial;
+   font-weight: normal;
+   font-size: 13px;
+   line-height: 1.1875;
+   margin: 0;
+   text-align: center;
+}
+#PageHeader1
+{
+   background-color: #D3D3D3;
+   background-image: none;
+   -moz-box-sizing: border-box;
+   box-sizing: border-box;
+    position:absolute;
+    text-align:left;
+    left:0px;
+    top:0px;
+    width:100%;
+    height:49px;
+    z-index:7777;
+}
+#Logout1
+{
+   background-color: #707070;
+   border-color: #707070;
+   border-width: 1px;
+   border-style: solid;
+   border-radius: 7px;
+   color: #FFFFFF;
+   font-family: Arial;
+   font-weight: normal;
+   font-size: 13px;
+   font-style: normal;
+   text-decoration: none;
+   width: 96px;
+   height: 25px;
+    float:right;
+    margin-right: 15;
+}
+#my_canvas
+{
+   border-width: 0;
+}
