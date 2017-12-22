@@ -15,12 +15,7 @@
     "ejs-locals": "^1.0.2",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
-<<<<<<< HEAD
     "nconf": "^0.9.1"
-=======
-    "nconf": "^0.9.1",
-    "mongoose": "latest"
->>>>>>> ff4afba831f6bec930ef5479151a2b872d259cc1
   },
   "repository": {
     "type": "git",
