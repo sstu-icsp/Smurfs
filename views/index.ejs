@@ -1,82 +1,153 @@
 <html>
-	<head>
-	<meta charset="utf-8">
-		<title>canvas</title>
-	</head>
-	<body>
-		<canvas id = "my_canvas" width="1000" height="1000"></canvas>
-		<script language="JavaScript">
+<head>
+<meta charset="utf-8">
+<title>Морской бой</title>
+<link href="game.css" rel="stylesheet">
+</head>
+<body>
+<div id="container">
+<div id="wb_Shape1" style="position:absolute;
+                           left:205px;
+                           top:128px;
+                           width:454px;
+                           height:344px;
+                           z-index:2;">
+<canvas id = "my_canvas" width="590" height="1000"></canvas>
+    <script language="JavaScript">
 			var context = document.querySelector("canvas").getContext("2d");
-            //пузыри
-			/*var k=20, h=200  ; // количество пузырей, высота окна
-			var puz = [];
-			for (var i=0; i<k; i++)
-			{
-				puz[i] = [];
-				for (var j=0; j<5; j++)
-					{
-						if (j==0) puz[i][j]=Math.random()*2+2; //n
-						if (j==1) puz[i][j]=Math.random()*60+20; //x
-						if (j==2) puz[i][j]=h+20; // y
-						if (j==3) puz[i][j]=Math.random()*5+2; //r
-						if (j==4) puz[i][j]=1; //q
-					}
-			}
-			var y=-20, a=1, x=Math.random()*60+20;
-			function padenie()
-			{
-			context.clearRect(0, 0, 100, h);
-			for (var i=0; i<k; i++)
-			{
-			context.beginPath();
-			context.arc(+puz[i][1], +puz[i][2], +puz[i][3], 0, 2*Math.PI);
-			context.fillStyle = 'rgba(100,100,100,'+puz[i][4]+')';
-			context.fill();
-			if (puz[i][2]<-20)
-			{
-				puz[i][2]=h+20;
-				puz[i][1]=Math.random()*60+20;
-				puz[i][0]=Math.random()*2;
-				puz[i][3]=Math.random()*5+2;
-				puz[i][4]=1;
-			}
-			puz[i][2]-=puz[i][0];
-			puz[i][4]-=1/(h*puz[i][3]);
-			}
-			setTimeout("padenie()", 20);
-			}
-			if (a) padenie();*/
             //данные
-            var x = 10, y = 10; //количество ячеек в двух измерениях
-            var h = 50, s = 10; //размер ячейки и интервал между ними
-            var cell = []; //массив данных о сетке ячеек
-            var cX = null, cY = null; //координаты клика
-            var startX = null, startY = null; //запоминание начала клика
+//количество ячеек в двух измерениях
+            var x = 10, y = 10; 
+//размер ячейки и интервал между ними
+            var h = 50, s = 10;
+//отступ отрисовки игрового поля
+            var shiftX = 1, shiftY = 150;
+//массив данных о сетке ячеек
+            var cell = [];
+//координаты клика
+            var cX = null, cY = null; 
+//запоминание начала клика
+            var startX = null, startY = null; 
             var click = false;
-            var mouse = { //тут следим за мышью
+//тут следим за мышью
+            var mouse = { 
                 x : 0,
                 y : 0
             };
-            var AllColor = "#646464"; //всеобщий цвет
-            // #FF0000 запасной цвет
+//хранит координаты кораблей
+            var Ships = []; 
+//хранит координаты вражеских кораблей
+            var ShipsEnemy = [];
+//максимальное количество кораблей
+            var MaxShips = 5; 
+//максимальный размер корабля
+            var MaxShip = 4; 
+//всеобщий цвет
+            var AllColor = "#646464"; 
+            // #FF0000 цвет подбития
+//состояние игры
+            var state = 1; 
+//определяет чей ход: true - игрока, false - противника
+            var game = true;
+//определяет конец игры
+            var end = false;
             for (var i = 0; i < x; i++)// заполнение массива данными
                 {
                     cell[i] = [];
                     for (var j = 0; j < y; j++)
                         {
                             cell[i][j] = [];
-                            for (var z = 0; z < 3; z++)
+                            for (var z = 0; z < 4; z++)
                                 {
-                                    if (z==0) cell[i][j][z] = h * i + (s-1) * i+1; //данные по оси Х
-                                    if (z==1) cell[i][j][z] = h * j + (s-1) * j+1; //данные по оси У
+                                    if (z==0) cell[i][j][z] = h * i + (s-1) * i+shiftX; //данные по оси Х
+                                    if (z==1) cell[i][j][z] = h * j + (s-1) * j+shiftY; //данные по оси У
                                     if (z==2) cell[i][j][z] = AllColor; //цвет
+                                    if (z==3) cell[i][j][z] = true; //рендерить да/нет
                                 }
                         }
                 }
+//клоны базового массива данных специально для игрока
+            var gamerCell = deepCopy(cell);
+//клоны базового массива данных специально для врага
+            var enemyCell = deepCopy(cell);
             //стиль и цвет, пока не нужно
             context.fillStyle = AllColor;
             context.strokeStyle = AllColor;
-            //
+//количество потопленных кораблей игроком
+            var deadEnemyShips = 0;
+//количество потопленных кораблей врагом
+            var deadGamerShips = 0;
+//сообщение 
+            var EndStr = "";
+            ///////////////////////////////
+            function Start() //инициирует начало игры
+            {
+                cell = gamerCell;
+                generatorShipsEnemy();
+                state = 0;
+                repaintGamerShip();
+            }
+            function End(str) //инициирует конец игры
+            {
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.font = "40px Arial";
+                context.fillText(str, 295, 400);
+            }
+            function stepEnemy() //действия противника
+            {
+                game = false;
+                cell = enemyCell;
+                setTimeout("enemyShot()", 1000);
+            }
+            function deepCopy(arr) //клонирование массива
+            {
+                var i, copy;
+	            if (Array.isArray(arr)) 
+                {
+                    copy = arr.slice(0);
+                    for (i = 0; i < copy.length; i++) 
+                    {
+                        copy[i] = deepCopy(copy[i]);
+                    }
+                    return copy;
+                } 
+                else if(typeof arr === 'object') 
+                {
+                    throw 'Cannot clone array containing an object!';
+                }
+                else 
+                {
+                    return arr;
+                }
+            }
+            function fillPole(cell) //перекрашивает все поле
+            {
+                for (var i = 0; i < x; i++)
+                {
+                    for (var j = 0; j < y; j++)
+                        {
+                            for (var z = 2; z < 4; z++)
+                                {
+                                    if (z==2) cell[i][j][z] = AllColor; //цвет
+                                    if (z==3) cell[i][j][z] = true; //рендерить да/нет
+                                }
+                        }
+                }
+            }
+            function repaintGamerShip() //перекрашивает ячейки, для показа игроку своих кораблей
+            {
+                for (var i = 0; i < x; i++)
+                {
+                    for (var j = 0; j < y; j++)
+                        {
+                            if(IntersectsShip(i, j, Ships))
+                                {
+                                    enemyCell[i][j][2] = "#333333";
+                                }
+                        }
+                }
+            }
             function filletRect(Color, X, Y, H) //рисует квадрат со скругленными краями
             {
                 var q = 0.5; //коэффициент скругленности
@@ -98,22 +169,85 @@
                 //context.arcTo(X, q*H/2+Y, (H-q*H)/2+X, Y, (H-q*H)/2);
                 context.arc((H-q*H)/2+X, (H-q*H)/2+Y, (H-q*H)/2, 0, -Math.PI/2, false);
                 context.stroke();
-                //context.closePath();
-                context.fill(); // */
+                context.closePath();
+                context.fill();
+            }
+            function switchPrint(game) //рисует над серединой игрового поля индикатор переключения игры
+            {
+                
+                mX = 1; //масштаб отрисовки по Y
+                mY = 1; //масштаб отрисовки по Y
+                colorGamer = "#1DD300"; //цвет хода игрока
+                colorEnemy = "#FF0000"; //цвет хода противника
+                heightButton = 20; //определяет выступ кнопки от максимального значения, в дальнейшем будет передаваться как параметр для анимации переключения
+                if (game)
+                    {
+                        context.fillStyle = colorGamer;
+                        context.strokeStyle = colorGamer;
+                    }
+                else
+                    {
+                        context.fillStyle = colorEnemy;
+                        context.strokeStyle = colorEnemy;
+                    }
+                StartX = Math.round((cell[x-1][0][0] + h - cell[0][0][0])/2); //координата начала отрисовки по X
+                StartY = cell[0][0][1] - (h + s); //координата начала отрисовки по Y
+                ///////////////////////
+                context.beginPath();
+                context.moveTo(StartX, StartY);
+                context.lineTo(- 120 * mX + StartX, StartY);
+                context.lineTo(- 120 * mX + StartX, - 20 * mY + StartY);
+                context.lineTo(- 110 * mX + StartX, - 20 * mY + StartY);
+                if (game)
+                    {
+                        context.lineTo(- 110 * mX + StartX, - ((20 - heightButton) + 20) * mY + StartY);
+                        context.arc((- 110 + 10) * mX + StartX, - ((20 - heightButton) + 20) * mY + StartY, 10, Math.PI, 3*Math.PI/2, false);
+                        context.lineTo(- 80 * mX + StartX, - ((20 - heightButton) + 30) * mY + StartY);
+                        context.arc(- 80 * mX + StartX, - ((20 - heightButton) + 20) * mY + StartY, 10, -Math.PI/2, 0, false);
+                        context.lineTo(- 70 * mX + StartX, - 20 * mY + StartY);
+                    }
+                else 
+                    {
+                        context.lineTo(- 110 * mX + StartX, - (heightButton + 20) * mY + StartY);
+                        context.arc((- 110 + 10) * mX + StartX, - (heightButton + 20) * mY + StartY, 10, Math.PI, 3*Math.PI/2, false);
+                        context.lineTo(- 80 * mX + StartX, - (heightButton + 30) * mY + StartY);
+                        context.arc(- 80 * mX + StartX, - (heightButton + 20) * mY + StartY, 10, -Math.PI/2, 0, false);
+                        context.lineTo(- 70 * mX + StartX, - 20 * mY + StartY);
+                    }
+                context.lineTo(StartX, - 20 * mY + StartY);
+                context.lineTo(70 * mX + StartX, - 20 * mY + StartY);
+                if(game)
+                    {
+                        context.lineTo(70 * mX + StartX, - (heightButton + 20) * mY + StartY);
+                        context.arc((70 + 10) * mX + StartX, - (heightButton + 20) * mY + StartY, 10, Math.PI, 3*Math.PI/2, false);
+                        context.lineTo(100 * mX + StartX, - (heightButton + 30) * mY + StartY);
+                        context.arc(100 * mX + StartX, - (heightButton + 20) * mY + StartY, 10, -Math.PI/2, 0, false);
+                        context.lineTo(110 * mX + StartX, - 20 * mY + StartY);
+                    }
+                else
+                    {
+                        context.lineTo(70 * mX + StartX, - ((20 - heightButton) + 20) * mY + StartY);
+                        context.arc((70 + 10) * mX + StartX, - ((20 - heightButton) + 20) * mY + StartY, 10, Math.PI, 3*Math.PI/2, false);
+                        context.lineTo(100 * mX + StartX, - ((20 - heightButton) + 30) * mY + StartY);
+                        context.arc(100 * mX + StartX, - ((20 - heightButton) + 20) * mY + StartY, 10, -Math.PI/2, 0, false);
+                        context.lineTo(110 * mX + StartX, - 20 * mY + StartY);
+                    }
+                context.lineTo(120 * mX + StartX, - 20 * mY + StartY);
+                context.lineTo(120 * mX + StartX, StartY);
+                context.lineTo(StartX, StartY);
+                context.stroke();
+                context.closePath();
+                context.fill();
             }
             document.onclick = function(e) //получаем координату точки клика по canvas относительно него самого
                 {
-                    //document.getElementById('proba').innerHTML = e.pageX + ':' + e.pageY;
                     c = document.getElementById('my_canvas').getBoundingClientRect();
-                    //document.getElementById('proba2').innerHTML = (document.body.scrollLeft + c.left) + ":" + (document.body.scrollTop + c.top) + ' ' +e.pageX + ':' + e.pageY + ' ';
                     cX = e.pageX - (document.body.scrollLeft + c.left);
                     if (cX < 0 || cX > document.getElementById('my_canvas').scrollWidth) cX = null;
                     cY = e.pageY - (document.body.scrollTop + c.top);
                     if (cY < 0 || cY > document.getElementById('my_canvas').scrollHeight) cY = null;
-                    IfIntersects(cX, cY);
-                    //document.getElementById('proba2').innerHTML = cX + ':' + cY; //временная консоль
+                    IfIntersects(cX, cY, state);
                 }
-
             window.onmousemove = function(e) // отслеживаем коордитаны мыши
             {
                     c = document.getElementById('my_canvas').getBoundingClientRect();
@@ -121,24 +255,14 @@
                     if (mouse.x < 0 || mouse.x > document.getElementById('my_canvas').scrollWidth) mouse.x = null;
                     mouse.y = e.pageY - (document.body.scrollTop + c.top);
                     if (mouse.y < 0 || mouse.y > document.getElementById('my_canvas').scrollHeight) mouse.y = null;
-                document.getElementById('proba2').innerHTML = mouse.x + ':' + mouse.y; //временная консоль
             }
-
             window.onmousedown = function(e) //отслеживаем зажатие клавиши мыши
             {
                 startX = mouse.x;
                 startY = mouse.y;
                 click = true;
             }
-
-            window.onmouseup = function(e) //отслеживаем отпускание клавиши
-            {
-                startX = null;
-                startY = null;
-                click = false;
-            }
-
-            function IfIntersects(X, Y) //проверяет вхождение указанной точки в одну из ячеек и ее модификация
+            function IfIntersects(X, Y, state) //проверяет вхождение указанной точки в одну из ячеек и ее модификация
             {
                 if(X==null || Y==null) return;
                 if(X>cell[x-1][0][0]+h || Y>cell[0][y-1][1]+h) return;
@@ -153,27 +277,410 @@
                             {
                                 if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY = j;
                             }
-                        cell[pozX][pozY][2] = "#FF0000";
+                        if (game) //совершаем действие, если ход игрока
+                            {
+                                if (state == 0) // при клике перекрашиваем одну клетку
+                                {
+                                    if(cell[pozX][pozY][3] && IntersectsShip(pozX, pozY, ShipsEnemy))
+                                        {
+                                            cell[pozX][pozY][2] = "#FF0000";
+                                            ShipDeading(pozX, pozY, ShipsEnemy, cell);
+                                            if (calculateDeadShip(ShipsEnemy) >= MaxShips)
+                                                {
+                                                    end = true;
+                                                    game = false;
+                                                    EndStr = "Победил игрок!!";
+                                                    setTimeout("End(EndStr)", 1000);
+                                                }
+                                        }
+                                    if(cell[pozX][pozY][3] && !IntersectsShip(pozX, pozY, ShipsEnemy))
+                                        {
+                                            cell[pozX][pozY][3] = false;
+                                            setTimeout("stepEnemy()", 500);
+                                        }
+                                } 
+                                if (state == 1) //режим установки кораблей
+                                    {
+                                        if (click)
+                                            {
+                                                MassPrint = CalculateShip(X, Y);
+                                                if(AddShip(MassPrint))
+                                                    {
+                                                    for(var i = 0; i < MassPrint.length; i++)
+                                                        {
+                                                            cell[MassPrint[i][0]][MassPrint[i][1]][2] = "#FF0000";
+                                                        }
+                                                    }
+                                                if (Ships.length >= 5) setTimeout("Start()", 1000);
+                                            }
+                                    }
+                            }
                     }
+            }
+            function ShipDeading(X, Y, Ships, Cell) //проверяет вхождение указанной ячейки в потопленный корабль и производит операцию подбития всех остальных клеток поля вокруг корабля (Ships - все корабли)
+            {
+                for (var i = 0; i < Ships.length; i++)
+                    {
+                        ship = FindShip(Ships[i]);
+                        for (var j = 0; j < ship.length; j++)
+                            {
+                                if (X == ship[j][0] && Y == ship[j][1] && IfDeadShip(ship, Cell))
+                                    {
+                                        //////////////////////////////////// подбитый корабль найден
+                                        for(var a = 0; a < Cell.length; a++)
+                                            {
+                                                for(var b = 0; b < Cell[a].length; b++)
+                                                    {
+                                                        for(var c = 0; c < ship.length; c++)
+                                                            {
+                                                                if(Math.round(Math.hypot(ship[c][0] - a, ship[c][1] - b)) == 1 && Cell[a][b][2] != "#FF0000")
+                                                                    {
+                                                                        Cell[a][b][3] = false;
+                                                                    }
+                                                            }
+                                                    }
+                                            }
+                                        ////////////////////////////////////
+                                    }
+                            }
+                    }
+            }
+            function calculateDeadShip(Ships) //ведет подсчет потопленных кораблей
+            {
+                a = 0;
+                for(var i = 0; i < Ships.length; i++)
+                    {
+                        if (IfDeadShip(Ships[i], cell)) a++;
+                    }
+                return a;
+            }
+            function IfDeadShip(Ship, Cell) //проверяет корабль на потопленность
+            {
+                for (var i = 0; i < Ship.length; i++)
+                    {
+                        if (Cell[Ship[i][0]][Ship[i][1]][2] != "#FF0000")
+                            {
+                                return false;
+                            }
+                    }
+                return true;
+            }
+            function AddShip(MassPrint) // реализует добавление корабля 
+            {
+                if (Ships.length < MaxShips && MassPrint.length <= MaxShip && IntersectsShips(MassPrint, Ships)) //тут будет проверяться корректность установки корабля (пересечение с добавленными, ограниченность кораблей, их размеров)
+                    {
+                        NewShip = []; //новый корабль
+                        NewShip.push(MassPrint[0], MassPrint[MassPrint.length-1]); //добавляем координаты начала и конца в объект @корабль@
+                        Ships.push(NewShip); //добавляем корабль в массив кораблей
+                        return true;
+                    }
+                else return false;
+            }
+            function IntersectsShips(ShipOne, ships) //проверяет пересечение кораблей друг с другом, минимальное расстояние между ними
+            {
+                if (ships.length < 1 || ships == null) return true;
+                for(var s = 0; s < ships.length; s++)//перебираем корабли для сличения
+                    {
+                        ship = FindShip(ships[s]);
+                        for(var i=0; i < ship.length; i++)//перебираем ячейки кораблей
+                            {
+                                for(var j=0; j < ShipOne.length; j++)
+                                    {
+                                        if (Math.hypot(ship[i][0]-ShipOne[j][0], ship[i][1]-ShipOne[j][1]) < 2) //тут применен метод алгебраического нахождения расстояния между точками
+                                            {
+                                                return false;
+                                            }
+                                    }
+                            }
+                    }
+                return true;
+            }
+            function IntersectsShip(X, Y, Ships) //проверяет пересечение указанной точки с кораблем
+            {
+                for (var i = 0; i < Ships.length; i++)
+                    {
+                        mass = FindShip(Ships[i]);
+                        for(var j=0; j < mass.length; j++)
+                            {
+                                if (mass[j][0] == X && mass[j][1] == Y) return true;
+                            }
+                    }
+                return false;
+            }
+            function FindShip(Ship) //определяет массив клеток, занимаемых объектом Ship
+            {
+                mass = [];
+                if (Ship[0][0] == Ship[1][0])
+                    {
+                        if (Ship[0][1]<=Ship[1][1])
+                            {
+                               for(var i=0; i <= Math.abs(Ship[1][1] - Ship[0][1]); i++)
+                                   {
+                                       mass[i] = [];
+                                       mass[i][0] = Ship[0][0];
+                                       mass[i][1] = Ship[0][1] + i;
+                                   }
+                                return mass;
+                            }
+                        else
+                        {
+                            for(var i=0; i <= Math.abs(Ship[0][1] - Ship[1][1]); i++)
+                                   {
+                                       mass[i] = [];
+                                       mass[i][0] = Ship[0][0];
+                                       mass[i][1] = Ship[1][1] + i;
+                                   }
+                            return mass;
+                        }
+                    }
+                if (Ship[0][1] == Ship[1][1])
+                    {
+                        if (Ship[0][0]<=Ship[1][0])
+                            {
+                            for(var i=0; i <= Math.abs(Ship[1][0] - Ship[0][0]); i++)
+                                {
+                                    mass[i] = [];
+                                    mass[i][0] = Ship[0][0] + i; // !!!!не забыть бы про реализацию через push
+                                    mass[i][1] = Ship[0][1];
+                                }
+                            return mass;
+                            }
+                        else
+                                {
+                                    for(var i=0; i <= Math.abs(Ship[0][0] - Ship[1][0]); i++)
+                                    {
+                                        mass[i] = [];
+                                        mass[i][0] = Ship[1][0] + i;
+                                        mass[i][1] = Ship[0][1];
+                                    }
+                                    return mass;
+                                }
+                    }
+            }
+            function CalculateShip(X, Y) //возвращает массив с координатами закрашиваемых ячеек
+            {
+                var Dx = X - startX;
+                var Dy = Y - startY;
+                var mass = [];
+                if(Dy < 0 && Math.abs(Dy) > Math.abs(Dx)) // I
+                    {
+                        var pozX, pozY, pozY2;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY2 = j;
+                            }
+                        for(var i=0;i <= Math.abs(pozY - pozY2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX;
+                                mass[i][1] = pozY-i;
+                            }
+                        return mass;
+                    }
+                if(Dx >= 0 && Math.abs(Dy) <= Math.abs(Dx)) //II
+                    {
+                        var pozY, pozX, pozX2;
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                         for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX2 = i;
+                            }
+                        for(var i=0;i <= Math.abs(pozX - pozX2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX+i;
+                                mass[i][1] = pozY;
+                            }
+                        return mass;
+                    }
+                if(Dy > 0 && Math.abs(Dy) > Math.abs(Dx)) //III
+                    {
+                        var pozX, pozY, pozY2;
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (Y >= cell[0][j][1] && Y <= cell[0][j][1]+h) pozY2 = j;
+                            }
+                        for(var i=0;i <= Math.abs(pozY - pozY2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX;
+                                mass[i][1] = pozY+i;
+                            }
+                        return mass;
+                    }
+                if(Dx <= 0 && Math.abs(Dy) <= Math.abs(Dx)) //IV
+                    {
+                        var pozY, pozX, pozX2;
+                        for(var j = 0; j < y; j++)
+                            {
+                                if (startY >= cell[0][j][1] && startY <= cell[0][j][1]+h) pozY = j;
+                            }
+                        for(var i = 0; i < x; i++)
+                            {
+                                if (startX >= cell[i][0][0] && startX <= cell[i][0][0]+h) pozX = i;
+                            }
+                         for(var i = 0; i < x; i++)
+                            {
+                                if (X >= cell[i][0][0] && X <= cell[i][0][0]+h) pozX2 = i;
+                            }
+                        for(var i=0;i <= Math.abs(pozX - pozX2);i++)
+                            {
+                                mass[i] = [];
+                                mass[i][0] = pozX-i;
+                                mass[i][1] = pozY;
+                            }
+                        return mass;
+                    }
+            }
+            function generatorShipsEnemy()//реализует добавление кораблей на поле противника
+            {
+                for(var i = 0; i < MaxShips; i++)
+                    {
+                        Ship = []; //добавляемый корабль
+                        do
+                        {
+                        shipLength = Math.round(Math.random() * MaxShip); //рандомно определяем максимальную длину корабля
+                        shipStart = []; //координаты начала корябля
+                        shipEnd = []; //координаты конца корабля
+                        Ship = [];
+                        shipStart.push(Math.round(Math.random() * (x-1))); //рандомно определяем начальную координату корабля
+                        shipStart.push(Math.round(Math.random() * (y-1)));
+                        Ship.push(shipStart);
+                        shipDirection = Math.round(Math.random() * 3); //рандомно определяем направление корабля
+                        switch(shipDirection)
+                            {
+                                case 0: //вверх
+                                {
+                                    shipEnd.push(shipStart[0]);
+                                    shipEnd.push(shipStart[1] - shipLength);
+                                    break;
+                                }
+                                case 1: //вправо
+                                {
+                                    shipEnd.push(shipStart[0] + shipLength);
+                                    shipEnd.push(shipStart[1]);
+                                    break;
+                                }
+                                case 2: //вниз
+                                {
+                                    shipEnd.push(shipStart[0]);
+                                    shipEnd.push(shipStart[1] + shipLength);
+                                    break;
+                                }
+                                case 3: //влево
+                                {
+                                    shipEnd.push(shipStart[0] - shipLength);
+                                    shipEnd.push(shipStart[1]);
+                                    break;
+                                }
+                            }
+                        if ((shipEnd[0] > x - 1 || shipEnd[0] < 0) || (shipEnd[1] > y - 1 || shipEnd[1] < 0)) continue;
+                        Ship.push(shipEnd);
+                        ShipMass = FindShip(Ship);
+                        }
+                        while(!IntersectsShips(ShipMass, ShipsEnemy)); //пока корабль выходит за границы поля и пересекается с другими кораблями, повторять
+                        ShipsEnemy.push(Ship);
+                    }
+            }
+            function enemyShot() //реализует вражеский выстрел
+            {
+                flag = true;
+                coordinate = [];
+                do
+                {
+                    coordinate = [];
+                    coordinate.push(Math.round(Math.random() * (x-1)));
+                    coordinate.push(Math.round(Math.random() * (y-1)));
+                    if (cell[coordinate[0]][coordinate[1]][3] && cell[coordinate[0]][coordinate[1]][2] != "#FF0000")
+                        {
+                            flag = false;
+                        }
+                }
+                while(flag);
+                if(cell[coordinate[0]][coordinate[1]][3] && IntersectsShip(coordinate[0], coordinate[1], Ships))
+                    {
+                        cell[coordinate[0]][coordinate[1]][2] = "#FF0000";
+                        ShipDeading(coordinate[0], coordinate[1], Ships, cell);
+                        if (calculateDeadShip(Ships) >= MaxShips)
+                            {
+                                end = true;
+                                game = false;
+                                EndStr = "Победил противник((";
+                                setTimeout("End(EndStr)", 1000);
+                                }
+                        else
+                            {
+                                setTimeout("enemyShot()", 1000);
+                            }
+                    }
+                if(cell[coordinate[0]][coordinate[1]][3] && !IntersectsShip(coordinate[0], coordinate[1], Ships))
+                    {
+                        cell[coordinate[0]][coordinate[1]][3] = false;
+                        setTimeout("gamerShot()", 1000);
+                    }
+            }
+            function gamerShot() //передает управление игроку
+            {
+                game = true;
+                cell = gamerCell;
             }
             function paint()
             {
                 context.clearRect(0, 0, 1000, 1000);
                 //здесь будет отрисовка рабочего поля и его анимация
-                for (var i = 0; i < x; i++)
+                if (!end)
                     {
-                        for (var j = 0; j < y; j++)
+                        for (var i = 0; i < x; i++)
                             {
-                                //context.fillRect(cell[i][j][0], cell[i][j][1], h, h);
-                                filletRect(cell[i][j][2], cell[i][j][0], cell[i][j][1], h);
+                                for (var j = 0; j < y; j++)
+                                    {
+                                        if (cell[i][j][3])
+                                            {
+                                                filletRect(cell[i][j][2], cell[i][j][0], cell[i][j][1], h);
+                                            }
+                                    }
                             }
+                        switchPrint(game);
                     }
-
+                else
+                    {
+                        End(EndStr);
+                    }
                 setTimeout("paint()", 20);
             }
             if (true) paint();
 		</script>
-        <div id = "proba"></div>
-        <div id = "proba2"></div>
-	</body>
+</div>
+</div>
+<div id="PageHeader1">
+<div id="wb_Logout1" style="z-index:0;">
+<form name="logoutform" method="post" action="" id="logoutform">
+<input type="submit" name="logout" value="Выход" id="Logout1">
+</form>
+</div>
+</div>
+</body>
 </html>
