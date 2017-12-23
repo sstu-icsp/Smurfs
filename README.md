@@ -1,12 +1,12 @@
 ## Добро пожаловать на страницу проекта "Морской бой" команды Smurfs
 
 ## Запуск
-Выгружаем репозиторий git clone https://github.com/sstu-icsp/Smurfs.git
-Подгружаем модули npm install
-Запускаем node сервер npm start
-Переходим на страницу localhost:8080/registration и регистрируемся
-Переходим на страницу localhost:8080/auth и входим в свою учетную запись
-Наслаждаемся игрой :D
+- Выгружаем репозиторий git clone https://github.com/sstu-icsp/Smurfs.git
+- Подгружаем модули npm install
+- Запускаем node сервер npm start
+- Переходим на страницу localhost:8080/registration и регистрируемся
+- Переходим на страницу localhost:8080/auth и входим в свою учетную запись
+- Наслаждаемся игрой :D
 
 ## Основные документы
 
